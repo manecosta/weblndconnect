@@ -9,7 +9,7 @@ This tool was based on the Go code in https://github.com/LN-Zap/lndconnect
 - Go into the unpacked folder and open the `weblndconnect.html` file.
 
 - The host field is automatically filled with your local network IP address if the code can grab it. You can also use a public IP address or a host name.
-- The port defaults to 10009. Change it if your Lnd node is serving on another one.
+- The port defaults to `10009`. Change it if your Lnd node is serving on another one.
 - Select your `tls.cert` path.
   - For Windows you can usually find it in `C:\Users\<youruser>\AppData\Local\Lnd`.
   - For Linux and MacOS it should be at a similar folder.

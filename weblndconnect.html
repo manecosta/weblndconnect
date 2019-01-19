@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <script src="js/qrcode.js"></script>
+    </head>
+    <body>
+        <h1>Lnd Connect</h1>
+        <div style="border: 1px solid black; padding: 10px 20px 30px 20px;">
+            <h3>Lnd Host</h3>
+            <input id="input-host" type="text" />
+            
+            <h3>Lnd Port</h3>
+            <input id="input-port" value="10009" type="text" />
+            
+            <h3>Certificate File (tls.cert):</h3>
+            <input id="input-cert" type="file" />
+            
+            <h3>Macaroon File (admin.macaroon):</h3>
+            <input id="input-macaroon" type="file" />
+
+            <h3>QRCode Scale (Size of output):</h3>
+            <input id="input-scale" value="6" type="number" />
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="generateQRCode()">Generate QRCode</button>
+        </div>
+        
+        <canvas style="margin-top: 20px;" id="qrcode"></canvas>
+
+        <script>
+            // Trying to automatically fill out the local IP address
+            try {
+                window.RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+                var pc = new RTCPeerConnection({iceServers:[]}), noop = function(){};      
+                pc.createDataChannel('');
+                pc.createOffer(pc.setLocalDescription.bind(pc), noop);
+                pc.onicecandidate = function(ice) {
+                    if (ice && ice.candidate && ice.candidate.candidate) {
+                        var myIP = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(ice.candidate.candidate)[1];
+                        document.getElementById('input-host').value = myIP;  
+                        pc.onicecandidate = noop;
+                    }
+                };
+            } catch (error) {
+                console.error('Unable to automatically retrieve local IP address ' + error);
+            }
+            
+            // Action when pressing the generate button
+            function generateQRCode() {
+                
+                // Retrieve all input values
+                host = document.getElementById('input-host').value;
+                port = document.getElementById('input-port').value;
+                scale = document.getElementById('input-scale').value;
+                
+                // Retrieve all file inputs
+                cert_input = document.getElementById('input-cert');
+                macaroon_input = document.getElementById('input-macaroon');
+                
+                // Retrieving the actual files from inputs
+                var cert_file = cert_input.files[0];
+                var macaroon_file = macaroon_input.files[0];
+                
+                // Reading the certificate file
+                var cert_reader = new FileReader();
+                cert_reader.onload = function(ce) {
+                    var cert_contents = ce.target.result;
+                    var lines = [];
+
+                    // Breaking the cert file into its various lines
+                    var original_lines = cert_contents.split('\n');
+                    for (var i in original_lines) {
+                        line = original_lines[i];
+                        // Removing all empty lines
+                        if (line != '') {
+                            lines.push(line);
+                        }
+                    }
+                    // Removing the first and last line which usually hold description data and not the certificate data
+                    cert_contents = lines.slice(1,-1).join('');
+                    
+                    // Reading the macaroon file
+                    var macaroon_reader = new FileReader();
+                    macaroon_reader.onload = function(me) {
+                        var macaroon_contents = me.target.result;
+
+                        // Reading as a data url will return a bunch of description data in the first 37 characters so we remove them
+                        macaroon_contents = macaroon_contents.substring(37);
+
+                        // Building the connection string
+                        url = 'lndconnect://' + host + ':' + port + '?cert=' + cert_contents + '&macaroon=' + macaroon_contents
+                        
+                        // Generating the QRCode using the external library
+                        var QRC = qrcodegen.QrCode;
+                        var qr = QRC.encodeText(url, QRC.Ecc.MEDIUM);
+                        qr.drawCanvas(+scale, 0, document.getElementById('qrcode'));
+                    }
+                    // Reading as a data url which automatically converts a binary file to base64
+                    macaroon_reader.readAsDataURL(macaroon_file);
+                }
+                // Reading the certificate file as plain text
+                cert_reader.readAsText(cert_file)
+            }
+        </script>
+    </body>
+</html>

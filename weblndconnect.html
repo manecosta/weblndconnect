@@ -44,6 +44,11 @@
             } catch (error) {
                 console.error('Unable to automatically retrieve local IP address ' + error);
             }
+
+            // Helper method to convert from base64 to base64URL
+            function base64URLFromBase64(base64String) {
+                return base64String.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
+            }
             
             // Action when pressing the generate button
             function generateQRCode() {
@@ -86,6 +91,10 @@
 
                         // Reading as a data url will return a bunch of description data in the first 37 characters so we remove them
                         macaroon_contents = macaroon_contents.substring(37);
+
+                        // convert contents to base64URL
+                        cert_contents = base64URLFromBase64(cert_contents);
+                        macaroon_contents = base64URLFromBase64(macaroon_contents);
 
                         // Building the connection string
                         url = 'lndconnect://' + host + ':' + port + '?cert=' + cert_contents + '&macaroon=' + macaroon_contents

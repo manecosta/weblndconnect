@@ -25,7 +25,7 @@
             <button onclick="generateQRCode()">Generate</button>
         </div>
         
-        <div style="margin-top: 20px;" id="lndconnecturl">
+        <div style="margin-top: 20px; word-break: break-all;" id="lndconnecturl">
 
         </div>
 
@@ -92,9 +92,9 @@
                     var macaroon_reader = new FileReader();
                     macaroon_reader.onload = function(me) {
                         var macaroon_contents = me.target.result;
-
-                        // Reading as a data url will return a bunch of description data in the first 37 characters so we remove them
-                        macaroon_contents = macaroon_contents.substring(37);
+                        
+                        // Removing the data prefix if it exists
+                        macaroon_contents = macaroon_contents.substring(macaroon_contents.indexOf(',') + 1);
 
                         // convert contents to base64URL
                         cert_contents = base64URLFromBase64(cert_contents);

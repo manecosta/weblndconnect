@@ -22,9 +22,13 @@
         </div>
 
         <div style="margin-top: 20px;">
-            <button onclick="generateQRCode()">Generate QRCode</button>
+            <button onclick="generateQRCode()">Generate</button>
         </div>
         
+        <div style="margin-top: 20px;" id="lndconnecturl">
+
+        </div>
+
         <canvas style="margin-top: 20px;" id="qrcode"></canvas>
 
         <script>
@@ -97,8 +101,11 @@
                         macaroon_contents = base64URLFromBase64(macaroon_contents);
 
                         // Building the connection string
-                        url = 'lndconnect://' + host + ':' + port + '?cert=' + cert_contents + '&macaroon=' + macaroon_contents
-                        
+                        url = 'lndconnect://' + host + ':' + port + '?cert=' + cert_contents + '&macaroon=' + macaroon_contents;
+
+                        lndconnecturl = document.getElementById('lndconnecturl');
+                        lndconnecturl.innerHTML = url;
+
                         // Generating the QRCode using the external library
                         var QRC = qrcodegen.QrCode;
                         var qr = QRC.encodeText(url, QRC.Ecc.MEDIUM);
